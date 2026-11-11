@@ -1,0 +1,3 @@
+# GitHub blocks single files over 100 MiB. The installer is stored as two parts.
+# Run ./rebuild-deb.sh to recreate the original .deb locally.
+/chronos-studio-standalone_0.1.0_amd64.deb

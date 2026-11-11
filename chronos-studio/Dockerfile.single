@@ -1,0 +1,48 @@
+# Chronos Studio — ONE container for free-tier hosts (Fly.io / HF Spaces).
+# Builds the SPA with Node, then serves it with nginx and runs the FastAPI API
+# in the same image. See DEPLOY.md §1 and §3.
+FROM node:20-alpine AS web
+WORKDIR /web
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY frontend/ .
+RUN npm run build
+
+FROM python:3.11-slim
+ARG INSTALL_BROWSER=0
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    CHRONOS_DEBUG=false \
+    CHRONOS_ALLOW_ALL_ORIGINS=true \
+    CHRONOS_SESSION_TTL_HOURS=6 \
+    CHRONOS_UPLOAD_DIR=/tmp/chronos_uploads \
+    PORT=8080
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      nginx gettext-base curl ca-certificates libgomp1 \
+ && if [ "$INSTALL_BROWSER" = "1" ]; then \
+      apt-get install -y --no-install-recommends chromium fonts-liberation ; \
+    fi \
+ && rm -rf /var/lib/apt/lists/* /etc/nginx/sites-enabled/default
+
+WORKDIR /app
+COPY backend/requirements.txt backend/requirements-deploy.txt ./
+RUN pip install --no-cache-dir -r requirements-deploy.txt
+
+COPY backend/app ./app
+COPY backend/scripts ./scripts
+COPY scripts/single-container ./single-container
+RUN python scripts/gen_examples.py || true
+
+COPY --from=web /web/dist /usr/share/nginx/html
+RUN chmod +x /app/single-container/entrypoint.sh \
+ && mkdir -p /tmp/chronos_uploads
+
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=25s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:8080/ >/dev/null || exit 1
+LABEL org.opencontainers.image.title="Chronos Studio (single container)"
+
+CMD ["/app/single-container/entrypoint.sh"]

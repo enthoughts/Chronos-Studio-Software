@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chronos Studio — time-series analysis for everyone</title>
+    <meta name="description" content="Free, beginner-friendly, browser-based time-series analysis: EDA, stationarity, model selection, diagnostics, forecasts and a manuscript-ready report." />
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- Local UMD copy: no CDN, so the sandboxed in-app preview can render charts.
+         Kept out of the Rollup graph because the 4.4 MB minified bundle made
+         `vite build` exhaust the sandbox's memory. -->
+    <script src="/plotly.min.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

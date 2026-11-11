@@ -1,0 +1,103 @@
+/*
+ * src/styles/theme.css — all design tokens in one place.
+ * Charts read the same tokens from src/charts/theme.ts (single source of truth
+ * for palette, so a figure and the UI never disagree about "series blue").
+ */
+
+:root {
+  color-scheme: light;
+
+  --ink:            #16202c;
+  --ink-soft:       #4a5a6a;
+  --ink-faint:      #7d8b99;
+  --rule:           #e2e8ef;
+  --rule-strong:    #c9d4e0;
+  --paper:          #ffffff;
+  --canvas:         #f4f6f9;
+  --panel:          #ffffff;
+
+  --brand:          #1f5fbf;
+  --brand-dark:     #143f80;
+  --brand-wash:     #eaf1fb;
+
+  --ok:             #1a7f4b;
+  --ok-wash:        #e7f5ec;
+  --warn:           #a86b00;
+  --warn-wash:      #fdf3e0;
+  --bad:            #b3261e;
+  --bad-wash:       #fceceb;
+  --stale:          #6b7280;
+  --stale-wash:     #f1f2f4;
+
+  --radius:         10px;
+  --radius-sm:      6px;
+  --shadow-sm:      0 1px 2px rgba(22, 32, 44, 0.06);
+  --shadow:         0 2px 10px rgba(22, 32, 44, 0.08);
+  --shadow-lg:      0 12px 32px rgba(22, 32, 44, 0.14);
+
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --ribbon-h: 92px;
+  --topbar-h: 52px;
+  --options-w: 320px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --ink:        #e8edf3;
+    --ink-soft:   #aab7c5;
+    --ink-faint:  #7c8b9a;
+    --rule:       #26313d;
+    --rule-strong:#39485a;
+    --paper:      #131a22;
+    --canvas:     #0e141a;
+    --panel:      #18212b;
+    --brand:      #6ea8f5;
+    --brand-dark: #9cc4fa;
+    --brand-wash: #17283d;
+    --ok-wash:    #12291c;
+    --warn-wash:  #2c2314;
+    --bad-wash:   #2e1a19;
+    --stale-wash: #1c2027;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { margin: 0; font-weight: 620; letter-spacing: -0.011em; }
+h1 { font-size: 20px; }
+h2 { font-size: 16px; }
+h3 { font-size: 14px; }
+p  { margin: 0; }
+a  { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+code, pre, .mono { font-family: var(--mono); font-size: 12.5px; }
+
+::selection { background: var(--brand-wash); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

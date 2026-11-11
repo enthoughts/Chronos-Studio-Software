@@ -1,0 +1,19 @@
+# Container / production install for Chronos Studio (Part 19).
+#
+# Docker installs THIS file, not requirements.txt alone, so the shipped image
+# has the report and ML extras that pyproject.toml declares as optional:
+#   [project.optional-dependencies] report / ml / ai
+# The app still degrades gracefully if any of them is absent — see
+# app/core/config.py::optional_features — but a default `docker compose up`
+# must produce DOCX, XLSX and HTML reports and working ML models.
+#
+# Everything below is pip-installable without a compiler or a browser binary.
+# PDF and 300-dpi PNG need Chromium; build with
+#   docker compose build --build-arg INSTALL_BROWSER=1 backend
+# (or set CHRONOS_CHROME to an existing executable). See DEPLOY.md.
+-r requirements.txt
+
+python-docx>=1.1
+playwright>=1.40
+scikit-learn>=1.4
+google-genai>=1.0,<2

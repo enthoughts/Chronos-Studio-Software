@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chronos Studio — per-dataset software usage guide</title>
+<style>
+  :root {
+    --ink: #17202a; --soft: #44546a; --faint: #6b7a90; --paper: #ffffff;
+    --wash: #f4f7fb; --rule: #dce3ec; --brand: #235789; --brand-wash: #e8f1fb;
+    --ok: #1d7a4c; --ok-wash: #e8f6ee; --warn: #a66400; --warn-wash: #fff4dc;
+    --bad: #a12b2b; --bad-wash: #fdecec; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0; background: var(--wash); color: var(--ink);
+         font: 15px/1.62 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 28px 20px 60px; }
+  header { background: var(--paper); border: 1px solid var(--rule); border-left: 5px solid var(--brand);
+           border-radius: 12px; padding: 22px 24px; margin-bottom: 22px; }
+  h1 { font-size: 27px; line-height: 1.25; margin: 0 0 8px; letter-spacing: -0.01em; }
+  h2 { font-size: 23px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h3 { font-size: 16px; margin: 0 0 8px; color: var(--brand); }
+  p { margin: 0 0 9px; }
+  .lede { color: var(--soft); font-size: 15px; }
+  .meta { color: var(--faint); font-size: 13px; margin-top: 10px; }
+  nav { margin: 14px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  nav a { color: var(--brand); background: var(--brand-wash); border: 1px solid #c9dcf0;
+          text-decoration: none; padding: 5px 10px; border-radius: 999px; font-size: 13px; }
+  .note { background: var(--brand-wash); border: 1px solid #c9dcf0; border-radius: 10px;
+          padding: 12px 14px; margin-top: 14px; font-size: 13.5px; }
+  .note strong { color: var(--brand); }
+  .dataset { background: var(--paper); border: 1px solid var(--rule); border-radius: 12px;
+             padding: 22px 24px; margin: 0 0 22px; }
+  .dataset > h2 { border-bottom: 1px solid var(--rule); padding-bottom: 12px; margin-bottom: 14px; }
+  .kicker { display: inline-block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+            color: var(--faint); margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 8px 0 14px; }
+  th, td { border: 1px solid var(--rule); padding: 7px 9px; vertical-align: top; text-align: left; }
+  th { background: var(--wash); color: var(--soft); font-weight: 650; }
+  td:first-child { white-space: nowrap; font-weight: 600; color: var(--brand); width: 155px; }
+  .kv td:first-child { width: 190px; }
+  .step { border: 1px solid var(--rule); border-left: 3px solid var(--brand); border-radius: 9px;
+          padding: 13px 15px; margin: 12px 0; background: #fcfdff; }
+  .step.alt { border-left-color: var(--warn); background: #fffdf7; }
+  .step h3 { margin-bottom: 6px; }
+  .step p:last-child, .step ul:last-child, .step table:last-child { margin-bottom: 0; }
+  ul, ol { margin: 6px 0 10px; padding-left: 22px; }
+  li { margin-bottom: 4px; }
+  code { font-family: var(--mono); font-size: 12.5px; background: var(--wash); border: 1px solid var(--rule);
+         border-radius: 4px; padding: 1px 5px; color: #20364d; }
+  .btn { font-family: var(--mono); font-size: 12px; background: var(--brand-wash); color: var(--brand);
+         border: 1px solid #bcd4ee; border-radius: 5px; padding: 1px 6px; white-space: nowrap; }
+  .why { border-left: 3px solid var(--warn); background: var(--warn-wash); margin: 8px 0;
+         padding: 8px 12px; font-size: 13.5px; color: #5a431c; }
+  .see { background: var(--ok-wash); border-left: 3px solid var(--ok); padding: 8px 12px;
+         margin: 8px 0 0; font-size: 13.5px; color: #20513a; }
+  .warn { background: var(--bad-wash); border-left: 3px solid var(--bad); padding: 8px 12px;
+          margin: 8px 0 0; font-size: 13.5px; color: #6d2323; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .03em;
+          padding: 2px 8px; border-radius: 999px; margin-right: 5px; }
+  .p-ok { background: var(--ok-wash); color: var(--ok); }
+  .p-warn { background: var(--warn-wash); color: var(--warn); }
+  .p-bad { background: var(--bad-wash); color: var(--bad); }
+  .p-info { background: var(--brand-wash); color: var(--brand); }
+  .steps td:first-child { width: 92px; }
+  .steps td:nth-child(2) { width: 46%; }
+  .tiny { font-size: 12.5px; color: var(--faint); }
+  footer { color: var(--faint); font-size: 12.5px; text-align: center; padding: 8px 0 0; }
+  @media print {
+    body { background: #fff; font-size: 11.5px; }
+    .wrap { max-width: none; padding: 0; }
+    header, .dataset, .step { box-shadow: none; break-inside: avoid; }
+    .dataset { page-break-before: always; }
+    .dataset:first-of-type { page-break-before: auto; }
+    nav { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Chronos Studio · software usage only</div>
+  <h1>Step-by-step guide for your five attached datasets</h1>
+  <p class="lede">Each section below is one complete click-through of Chronos Studio for one CSV: what to upload, what to leave alone, which cards to accept, which toggles to set, and what the software shows at every stage from S0 to S15.</p>
+  <nav aria-label="Jump to a dataset">
+    <a href="#catfish">1 · catfish.csv</a>
+    <a href="#ice-cream">2 · ice_cream.csv</a>
+    <a href="#interest">3 · ice_cream_interest.csv</a>
+    <a href="#vs-heater">4 · ice_cream_vs_heater.csv</a>
+    <a href="#original">5 · original_series.csv</a>
+  </nav>
+  <div class="note">
+    <strong>Current build.</strong> Use <code>CHRONOS-local-install-v4.zip</code> and its <code>.sha256</code> sidecar for a fresh local install. The v4 archive includes the S1 jump-bar fix, the stage-navigation fix, the S7 Apply override, the raw-versus-after-log labels below and the Live AI capability fix. The Assistant drawer is not used in these workflows, but v4 installs the compatible <code>google-genai</code> SDK and reports whether Live AI needs an SDK or a key; no API key is included. An installable desktop package, <code>chronos-studio-standalone_0.1.0_amd64.deb</code>, is also available and includes these CSVs plus this guide; see <code>STANDALONE.md</code>. Earlier v2 and v3 archives are clean but stale.
+  </div>
+  <div class="note">
+    <strong>Start clean for every dataset.</strong> In the top bar use <span class="btn">⋯ More</span> → <span class="btn">Delete session</span>, then <span class="btn">New analysis</span>. Leave <span class="btn">Simplify view</span> and <span class="btn">Plain language</span> off; they only change the display. The screenshots and numbers quoted below were produced with analysis seed <code>20260101</code>; if your top bar shows another seed, the exact numbers can move slightly, but every click and setting stays the same. The Assistant drawer is not used in this workflow. If a result is marked stale after you change the series, use that step's <span class="btn">Re-run</span> button. Double-clicking a step in the stepper resets the pipeline from that point.
+  </div>
+  <div class="note">
+    <strong>S1 in older builds.</strong> If a <em>Jump to</em> button does nothing, scroll below the three inline figures and click <span class="btn">show all N</span> (for <code>ice_cream.csv</code> it is <span class="btn">show all 15</span>). The <em>Outliers and structural changes</em> figure and <em>Flagged observations</em> table live in that expanded list. The current source now expands the list automatically when a jump button is clicked.
+  </div>
+  <div class="note">
+    <strong>Stage navigation and locked Apply.</strong> S6 and S7 intentionally share one results panel. The v3 source no longer lets a background refresh move the stepper from S6 to S7, or from S2 to S3 after S3 has completed; scrolling stays on the stage you chose. The selected stage is also saved per session, dataset and series version, so a page reload returns to S2 or S6 instead of the backend's last-completed stage. When a <em>What next</em> card carries an automatic <em>preview: makes it worse</em> badge, <span class="btn">Apply</span> is deliberately locked. Tick <em>I read the preview — apply anyway</em> first, then click <span class="btn">Apply</span>. The acknowledgement resets when a different recommendation or preview is shown. In older builds without that checkbox, use v3 or start a clean raw session; do not try to force the operation through the API.
+  </div>
+  <div class="meta">Stage names used here: S0 Load data · S1 Explore · S2 Advice · S3 Prepare · S4 Decompose · S5 Stationarity · S6 ACF/PACF · S7 What next · S8 Gate · S9 Suggest · S10 Fit · S11 Select · S12 Diagnostics · S13 Forecast · S14 Evaluate · S15 Write-up.</div>
+</header>
+
+<main>
+
+<!-- ============================ 1 · CATFISH ============================ -->
+<section id="catfish" class="dataset">
+  <div class="kicker">Dataset 1 of 5</div>
+  <h2>catfish.csv</h2>
+  <table class="kv">
+    <tr><th>File shape</th><td>324 rows, 2 columns: <code>Date</code>, <code>Total</code>. Monthly, 1986-01-01 → 2012-12-01.</td></tr>
+    <tr><th>What S0 infers</th><td><code>Date</code> → Time, <code>Total</code> → Value, Monthly (MS, period 12), continuous, 0 missing.</td></tr>
+    <tr><th>Initial S2 advice</th><td>1 high-confidence card: <em>Keep a seasonal term in whatever model you choose</em>.</td></tr>
+    <tr><th>Initial S8 verdict</th><td><span class="pill p-bad">NOT READY</span> one blocker: stationarity.</td></tr>
+    <tr><th>Path used here</th><td>S7 seasonal difference → S3 state-space imputation → S8 <span class="pill p-warn">READY WITH CAVEATS</span>.</td></tr>
+  </table>
+
+  <div class="step">
+    <h3>S0 — Load data</h3>
+    <p>Click the stage bar's <strong>S0 Data</strong> (or ribbon <span class="btn">Upload file</span>). On the Data panel choose the <span class="btn">Upload a file</span> tab, click <span class="btn">choose a file</span>, and select <code>catfish.csv</code>. The app reads it immediately; you do not need to press a separate load button.</p>
+    <p>Open <span class="btn">Change mapping</span> and confirm these fields:</p>
+    <table class="kv">
+      <tr><th>Time column</th><td><code>Date</code></td></tr>
+      <tr><th>Value column</th><td><code>Total</code></td></tr>
+      <tr><th>Calendar</th><td>leave <em>— infer from the dates —</em> (or explicitly choose <em>Monthly (start of month) (period 12)</em>; both give MS).</td></tr>
+      <tr><th>Duplicate timestamps</th><td><em>Average them</em> (default).</td></tr>
+      <tr><th>Data class</th><td>leave <em>— keep the detected class —</em>; the quality card says continuous.</td></tr>
+    </table>
+    <p>Click <span class="btn">Apply mapping</span> only if you changed something. Read <em>First rows, as the app sees them</em> and the <em>Data quality report</em>: 324 observations, 0 gaps, regular monthly index.</p>
+  </div>
+
+  <div class="step">
+    <h3>S1 — Explore (EDA)</h3>
+    <p>Open <strong>S1 Explore</strong>. It computes automatically; there is nothing to tick. Leave the <em>rolling window</em> box blank. Optionally click <span class="btn">Re-run</span> to refresh. Read the <em>Summary</em>, <em>Descriptives</em>, <em>Plots</em>, <em>Outliers</em> and <em>Data quality</em> cards. The profile finds strong monthly seasonality and no missing values.</p>
+  </div>
+
+  <div class="step">
+    <h3>S2 — Preprocessing advice</h3>
+    <p>Open <strong>S2 Advice</strong>. It runs automatically. You will see one high-confidence recommendation:</p>
+    <div class="why"><strong>Keep a seasonal term in whatever model you choose.</strong> Because: seasonal strength F_S = 0.81 at period 12 with Kruskal–Wallis p &lt; 0.001; the conventional boundary for strong seasonality is F_S = 0.64.</div>
+    <p><strong>Follow it as a modelling instruction, not as a data edit.</strong> There is no <span class="btn">Apply</span> button on this card, because it does not change the series. Remember it in S9/S10: keep seasonal candidates such as SARIMA and seasonal ETS ticked. Do not transform or delete anything here.</p>
+  </div>
+
+  <div class="step">
+    <h3>S3 — Prepare data, first pass</h3>
+    <p>Open <strong>S3 Prepare</strong>. The <em>Applied</em> strip should say <em>Nothing has been changed yet</em> and show series version 1. Leave it unchanged for now. This is the panel where treatments will later appear; its <span class="btn">↶ Undo last</span> and <span class="btn">↷ Redo last</span> buttons replay the chain from the untouched original. The <span class="btn">Preview</span>, <span class="btn">Before you commit</span>, <span class="btn">Apply</span> and <span class="btn">Discard</span> controls live on the S2 cards, not as free-form inputs here.</p>
+  </div>
+
+  <div class="step">
+    <h3>S4 — Decompose</h3>
+    <p>Open <strong>S4 Decompose</strong>. In the <em>Method</em> bar click <span class="btn">STL (recommended)</span>, leave <strong>Model:</strong> <span class="btn">additive</span>, then click <span class="btn">Run</span>. The additive scorecard reads roughly <em>90% trend, 8.3% seasonal, 2.1% remainder</em>. You may click <span class="btn">Compare methods</span> to see classical/UCM/HP overlays; all values are positive, so <span class="btn">multiplicative</span> also runs (89% trend, 8.0% seasonal), but keep additive as the recorded result so the later steps all describe the same stored decomposition.</p>
+  </div>
+
+  <div class="step">
+    <h3>S5 — Test stationarity</h3>
+    <p>Open <strong>S5 Stationarity</strong> and click <span class="btn">Run the tests</span>. There are no checkboxes in this panel. The software reports <em>Seasonal unit root</em>, with 2 contradictions and estimated breaks at 2003-03-01 and 1993-11-01. Read <em>What to do about it</em> and <em>Where the tests disagree</em>; do not delete the break dates, because the software hands them forward as step dummies.</p>
+  </div>
+
+  <div class="step">
+    <h3>S6 — ACF / PACF</h3>
+    <p>Open <strong>S6 ACF/PACF</strong>. It loads automatically with max lag 48; no input is needed. The reading is <em>seasonal spike at 12</em> (r = 0.813, with lag 24 also outside the band). Read <em>Candidate model orders — starting points</em> and <em>What to do next</em>. If the panel says the series changed, click <span class="btn">Re-run</span>.</p>
+  </div>
+
+  <div class="step alt">
+    <h3>S7 — What next: clear the S8 blocker</h3>
+    <p>Open <strong>S7 What next</strong>. The headline is <em>Next step: take a seasonal difference at the detected period — not a first difference</em>. On the first card click <span class="btn">Preview this</span>; the verdict is <span class="pill p-ok">better</span>, so click <span class="btn">Apply</span>. Do not apply the secondary <em>Both differences are needed</em> note; it has no operation.</p>
+    <p>After applying, go back to <strong>S1</strong> and click <span class="btn">Re-run</span>, then re-run <strong>S2</strong>, <strong>S4 Run</strong>, <strong>S5 Run the tests</strong>, <strong>S6 Re-run</strong> and <strong>S7 Re-run</strong>. S3 now shows one treatment, <code>difference</code>, series version 2, and 12 missing values at the start of the series.</p>
+  </div>
+
+  <div class="step alt">
+    <h3>S3 again — fill the 12 gaps</h3>
+    <p>Re-opened S2 now contains a medium-confidence card <em>Impute with a state-space model</em>. Click its <span class="btn">Preview</span>, read <em>Before you commit</em>, then click <span class="btn">Apply</span>. Ignore <em>Keep the unusual points…</em>, <em>Do not add seasonal terms</em>, <em>A difference has already been applied</em> and <em>Smoothing for presentation</em>: they are notes or optional display changes, not needed for this run.</p>
+    <p>Use <span class="btn">Re-run Steps 1 and 2</span> in S3, then re-run S4–S7. The <em>Applied</em> strip now lists <code>difference</code> + <code>kalman_smoother</code>, series version 3, 0 missing.</p>
+  </div>
+
+  <div class="step">
+    <h3>S8 — Ready to model?</h3>
+    <p>Open <strong>S8 Gate</strong>. In <em>Horizon</em> type <code>12</code>, click <span class="btn">Check this horizon</span>, then <span class="btn">Assess readiness</span> or <span class="btn">Re-assess</span>. The verdict changes to <span class="pill p-warn">READY WITH CAVEATS</span>, with no blockers. Read <em>Caveats — These travel with every later output</em>: the 2 structural breaks and the differenced/imputed series are part of the result, not errors to clear.</p>
+  </div>
+
+  <div class="step">
+    <h3>S9–S15 — model, forecast, evaluate, report</h3>
+    <table class="steps">
+      <tr><th>Step</th><th>Fill / click / toggle</th><th>Why and what you see</th></tr>
+      <tr><td>S9</td><td>Click <span class="btn">Build the candidate list</span>. If a <span class="btn">Confirm and continue</span> button remains, click it once.</td><td>The registry filters against the measured monthly seasonal series. Baselines are always included.</td></tr>
+      <tr><td>S10</td><td>Leave the compatible candidates ticked, but <strong>untick <code>theta</code></strong> and the advanced/volatility/machine-learning rows to keep the fit quick. Keep <code>mean</code>, <code>naive</code>, <code>seasonal_naive</code>, <code>drift</code>, <code>white_noise</code>, <code>ets</code>, <code>sarima</code>, <code>arima</code>, <code>ucm</code>. Click <span class="btn">Fit N models</span>.</td><td>Unticking Theta avoids an empty residual-diagnostics block that can break the S15 catalogue in this build. Baselines are fitted even if unticked. The comparison table ranks by AICc.</td></tr>
+      <tr><td>S11</td><td><em>Forecast horizon</em> = <code>12</code>, <em>Folds</em> = <code>4</code>, <em>Window</em> = <code>expanding</code>. Click <span class="btn">Run selection</span>.</td><td>Out-of-sample MASE is the default criterion. Read <em>Ranked shortlist</em> and <em>Why this model</em>.</td></tr>
+      <tr><td>S12</td><td>Click <span class="btn">Run diagnostics</span>.</td><td>Residual ACF, Q-Q, CUSUM and the ten-check battery appear. No inputs.</td></tr>
+      <tr><td>S13</td><td><em>Model</em> leave blank (<em>Winner: …</em>), <em>Horizon H</em> = <code>12</code>, all five <em>Intervals</em> ticked, <em>Construction</em> = <code>auto</code>, <em>Paths</em> = <code>2000</code>, <em>Seed</em> blank, <em>Back-transformation</em> should read <em>original units — not needed</em>, <em>Combination</em> = <code>none</code>. Click <span class="btn">Run forecast</span>.</td><td>No transform is active, so there is no bias-adjustment selector. If you see a <em>Transformed series</em> warning, undo the transform in S3 before forecasting.</td></tr>
+      <tr><td>S14</td><td>Leave <em>Horizon H</em> = <code>6</code>, <em>Folds</em> = <code>4</code>, <em>Origin scheme</em> = <code>expanding</code>, <em>Intervals</em> all ticked (95% locked), <em>Paths</em> = <code>2000</code>, <em>Seed</em> blank, <em>RQR repetitions</em> = <code>5</code>, <em>Include naive / seasonal-naive benchmark</em> ticked, <em>Models</em> empty, back-transformation <em>Original units — no bias adjustment needed</em>. Click <span class="btn">Run evaluation</span>.</td><td>This is a separate held-out check from S13; it does not need the same horizon. Read the leakage audit, metric policy and calibration plots.</td></tr>
+      <tr><td>S15</td><td><em>Theme</em> = <code>print</code>, <em>Report scope</em> = <code>All catalogue items</code>. Click <span class="btn">Re-check readiness</span>, then <span class="btn">Finalize &amp; mark S15 complete</span>, then <span class="btn">Open one-file HTML</span> or <span class="btn">Download HTML</span>. Optionally use <span class="btn">Open catalogue</span> to insert one figure and one table, then switch scope to <em>Selected items</em>.</td><td>With every stage complete and the compact fit above, the weighted scorecard reaches 100/100 and the verdict is <em>Analysis complete — ready for manuscript writing</em>. If the report says it could not be built, untick Theta in S10 and re-run S10–S14.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============================ 2 · ICE CREAM ============================ -->
+<section id="ice-cream" class="dataset">
+  <div class="kicker">Dataset 2 of 5</div>
+  <h2>ice_cream.csv</h2>
+  <table class="kv">
+    <tr><th>File shape</th><td>577 rows, 2 columns: <code>DATE</code>, <code>IPN31152N</code>. Monthly, 1972-01-01 → 2020-01-01.</td></tr>
+    <tr><th>What S0 infers</th><td><code>DATE</code> → Time, <code>IPN31152N</code> → Value, Monthly (MS, period 12), continuous, 0 missing.</td></tr>
+    <tr><th>Initial S2 advice</th><td>3 high-confidence cards: take logs, keep unusual points as dummies, keep a seasonal term.</td></tr>
+    <tr><th>Initial S8 verdict</th><td><span class="pill p-bad">NOT READY</span> one blocker: stationarity.</td></tr>
+    <tr><th>Path used here</th><td>Do not apply the log; S7 seasonal difference → S3 state-space imputation → S8 <span class="pill p-warn">READY WITH CAVEATS</span>.</td></tr>
+  </table>
+
+  <div class="note">
+    <strong>Why the guide's numbers can disagree with the screen.</strong> This section's recipe records the <em>raw, version 1</em> baseline. The attached S5/S7 screenshots are the <em>version 2</em> series after <code>transform.log</code> was applied in S3: the seed, file, <code>n=577</code> and Monthly calendar are identical, but every downstream statistic is computed on logarithms, not on the original units. A version-2 S3 strip reading <em>1 treatment applied</em> is the tell; it is not a cache or seed problem.
+    <table class="kv">
+      <tr><th>Reading</th><th>Raw series — version 1 (this guide)</th><th>After <code>transform.log</code> — version 2 (screenshots)</th></tr>
+      <tr><td>S1</td><td>mean 110, median 107, sd 28, range 58.7–196; F<sub>S</sub> 0.95; 7 unusual observations and 1 level shift; trend 0.0606/observation; seasonal swing grows.</td><td>mean 4.67, median 4.68, sd 0.258, range 4.07–5.28; F<sub>S</sub> 0.97; 0 unusual observations; trend 6.01 × 10<sup>−4</sup>/observation; seasonal swing no longer grows.</td></tr>
+      <tr><td>S2 facts</td><td>Box–Cox λ 0.216, level–spread correlation 0.758, F<sub>S</sub> 0.948, 7 outliers / 1 level shift; advises logs, intervention dummies and a seasonal term.</td><td>λ 1.92, level–spread correlation −0.552, F<sub>S</sub> 0.972, 0 outliers / 0 level shifts; advises a seasonal term and notes that a transform is already applied.</td></tr>
+      <tr><td>S7</td><td>Headline <em>take logs before modelling</em>; ranked log preview <span class="pill p-ok">better</span>, seasonal-difference preview <span class="pill p-bad">worse</span>, plus a both-differences note.</td><td>Headline <em>take a seasonal difference at the detected period — not a first difference</em>; the only actionable card is the seasonal difference, carrying <span class="pill p-bad">worse</span>, plus the both-differences note.</td></tr>
+    </table>
+    <p class="tiny">The S5 screenshot is the after-log table exactly: ADF −1.193/−3.418 and −1.759/−2.867; KPSS 2.870/0.463 and 1.103/0.146; Phillips–Perron −5.775/−3.418; DF-GLS −6.429/−3.190 and −7.868/−1.940; Zivot–Andrews −3.530/−5.073; OCSB −3.659/−5.876; Canova–Hansen 0.319/0.381. The raw table at the top of the guide is different because the units are different.</p>
+    <p>The S7 screenshot's locked button is also version-2 behaviour: the automatic preview says <em>ACF still significant through lag 8</em>, <em>r<sub>1</sub> 0.902 → 0.849</em>, <em>12 observations lost</em> and Ljung–Box <code>0.0000 → 0.0000</code>. <strong>Worse</strong> is a warning, not a statistical prohibition. In the current source, read that preview, tick <em>I read the preview — apply anyway</em>, then click <span class="btn">Apply</span>. The card also offers the defensible alternative of a model with seasonal and regular differencing built in (<code>D = 1, d = 1</code>), but that does not by itself clear S8.</p>
+  </div>
+
+  <div class="step">
+    <h3>S0 — Load data</h3>
+    <p>In <strong>S0 Data</strong> choose <span class="btn">Upload a file</span> → <span class="btn">choose a file</span> → <code>ice_cream.csv</code>. Open <span class="btn">Change mapping</span> and confirm:</p>
+    <table class="kv">
+      <tr><th>Time column</th><td><code>DATE</code></td></tr>
+      <tr><th>Value column</th><td><code>IPN31152N</code></td></tr>
+      <tr><th>Calendar</th><td><em>— infer from the dates —</em> (MS, period 12).</td></tr>
+      <tr><th>Duplicate timestamps</th><td><em>Average them</em>.</td></tr>
+      <tr><th>Data class</th><td><em>— keep the detected class —</em>, continuous.</td></tr>
+    </table>
+    <p class="see">The header pill should read <code>ice_cream.csv · n=577 · Monthly</code>. The quality report shows 0 missing and a regular index.</p>
+  </div>
+
+  <div class="step">
+    <h3>S1 — Explore (EDA)</h3>
+    <p>Open <strong>S1 Explore</strong>; it runs automatically with the <em>rolling window</em> box blank. Read the time plot, distribution, seasonal panels and outlier cards. The profile records 7 unusual observations and 1 level shift, plus a widening seasonal swing.</p>
+  </div>
+
+  <div class="step">
+    <h3>S2 — Preprocessing advice: which card to follow, and why</h3>
+    <p><strong>S2 Advice</strong> shows three high-confidence cards:</p>
+    <div class="why"><strong>Take logs before modelling.</strong> Because: Box–Cox λ = 0.22 (95% interval −0.07 to 0.5), the seasonal swing widens as the level rises, and level–spread correlation is 0.76.</div>
+    <div class="why"><strong>Keep the unusual points and add them to the model as intervention dummies.</strong> Because: 7 observations look unusual once trend and season are removed, 1 of them a level shift; deleting them removes information.</div>
+    <div class="why"><strong>Keep a seasonal term in whatever model you choose.</strong> Because: seasonal strength F_S = 0.95 at period 12, Kruskal–Wallis p &lt; 0.001, above the 0.64 boundary.</div>
+    <p><strong>Decision for a full S0→S15 run:</strong> do <em>not</em> click <span class="btn">Apply</span> on the log card here. It is valid advice for a variance-stabilised model, but this build refuses to forecast a series that has both an active transform and a difference; S7 will need a seasonal difference to clear the S8 blocker. Leave the outlier points in the data (do not delete them) and remember the seasonal-term card when ticking models in S10. The outlier-flag card can be previewed and applied if you want the intervention dummies recorded, but it is not required to reach the forecast.</p>
+    <p class="warn">If you do apply the log, S3 will show <code>transform.log</code> and series version 2; re-run S1–S7 before trusting their numbers. An active log plus a S7 seasonal difference is refused at S13: a back-transformed value would be a ratio of changes, not a level forecast. For a full forecast in original units, start clean from raw version 1 and apply only the seasonal difference and imputation, or undo the whole transform/difference/imputation chain and re-fit before S13.</p>
+  </div>
+
+  <div class="step">
+    <h3>S3 — Prepare data, first pass</h3>
+    <p>Open <strong>S3 Prepare</strong> and confirm <em>Nothing has been changed yet</em>, version 1. Leave the Applied strip alone. The screenshot-style state with <em>1 treatment applied (series version 2)</em> is a log-only branch; this guide uses the untransformed series so that S13 stays in original units.</p>
+  </div>
+
+  <div class="step">
+    <h3>S4 — Decompose</h3>
+    <p>Open <strong>S4 Decompose</strong>: click <span class="btn">STL (recommended)</span>, keep <strong>Model:</strong> <span class="btn">additive</span>, click <span class="btn">Run</span>. The scorecard reads about <em>51% trend, 47% seasonal, 2.7% remainder</em>. <span class="btn">multiplicative</span> also works because all values are positive (51% trend, 48% seasonal), but keep additive for the stored run. <span class="btn">Compare methods</span> is optional.</p>
+  </div>
+
+  <div class="step">
+    <h3>S5 — Test stationarity</h3>
+    <p>Click <span class="btn">Run the tests</span> in <strong>S5</strong>. The verdict is <em>Seasonal unit root</em> with 3 contradictions and one break dated 2008-09-01. The software keeps the break as a step dummy; do not remove the observation.</p>
+  </div>
+
+  <div class="step">
+    <h3>S6 — ACF / PACF</h3>
+    <p>Open <strong>S6</strong>. Max lag 48, reading <em>seasonal spike at 12</em> (r = 0.918; lags 24, 36 and 48 also significant). Read the candidate orders and the <em>What to do next</em> block.</p>
+  </div>
+
+  <div class="step alt">
+    <h3>S7 — What next: acknowledge a worse preview deliberately</h3>
+    <p>On the raw series the headline is <em>Next step: take logs before modelling (variance stabilisation)</em>. The ranked cards are <em>Take logs before modelling</em> (preview <span class="pill p-ok">better</span>) and <em>Take a seasonal difference at the detected period</em> (preview <span class="pill p-bad">worse</span>). The server attaches the preview when S7 loads, so there is no un-previewed Apply button to exploit.</p>
+    <p><strong>For the complete raw-series pipeline, read the seasonal-difference preview, tick <em>I read the preview — apply anyway</em>, then click <span class="btn">Apply</span> on that card.</strong> Applying only the log leaves S8 NOT READY; a log plus a difference is refused at S13. The seasonal difference alone clears the blocker without an active transform. On an older build without the checkbox, do not force the operation through the API — use the v3 source or start a clean session.</p>
+    <p><strong>If your screen already matches the after-log screenshots,</strong> S7 has no log card: the only action is <em>Take a seasonal difference…</em> with <span class="pill p-bad">worse</span>, accompanied by <em>Both differences are needed</em>. Use the same checkbox and Apply. The alternative printed on that card — a model with <code>D = 1, d = 1</code> — is statistically defensible, but it is not a bypass of a NOT READY S8: S10 refuses to fit while the stationarity blocker remains. After the difference, re-run <strong>S1</strong> → <strong>S2</strong> → <strong>S4 Run</strong> → <strong>S5 Run the tests</strong> → <strong>S6 Re-run</strong> → <strong>S7 Re-run</strong>; S2 then offers state-space imputation for the 12 leading gaps. Apply it, re-run the same stages, and S8 becomes READY WITH CAVEATS. S3 will list <code>transform</code> + <code>difference</code> + <code>kalman_smoother</code>, version 4, 0 missing. Before S13, undo that whole chain and re-fit on the raw path if you need original-unit forecasts.</p>
+    <p>After the first difference, S3 shows one <code>difference</code> treatment, version 2, 12 missing values. S7 will switch to an <em>undo the last difference — over-differenced</em> warning; leave the difference in place because S8 is now ready, and carry the disagreement into the report as a caveat.</p>
+  </div>
+
+  <div class="step alt">
+    <h3>S3 again — fill the 12 gaps</h3>
+    <p>Fresh S2 offers <em>Impute with a state-space model</em> (medium). Click <span class="btn">Preview</span> → <span class="btn">Apply</span>. Ignore <em>A transform has already been applied</em> if it appears as a stale note in the raw path, and ignore smoothing/“already applied” cards. Use <span class="btn">Re-run Steps 1 and 2</span>, then re-run S4–S7. The raw-path Applied strip lists <code>difference</code> + <code>kalman_smoother</code>, version 3, 0 missing. If you started from the after-log version 2, the strip instead lists three treatments and version 4; both reach READY WITH CAVEATS at S8, but only the raw path is safe for the original-unit S13 forecast.</p>
+  </div>
+
+  <div class="step">
+    <h3>S8 — Ready to model?</h3>
+    <p>In <strong>S8 Gate</strong>, type <code>12</code> in <em>Horizon</em>, click <span class="btn">Check this horizon</span>, then <span class="btn">Re-assess</span>. Verdict: <span class="pill p-warn">READY WITH CAVEATS</span>, no blockers. The travelling caveats include the 2008-09-01 break, the 7 flagged outliers and the differenced/imputed series.</p>
+  </div>
+
+  <div class="step">
+    <h3>S9–S15 — model, forecast, evaluate, report</h3>
+    <table class="steps">
+      <tr><th>Step</th><th>Fill / click / toggle</th><th>Why and what you see</th></tr>
+      <tr><td>S9</td><td><span class="btn">Build the candidate list</span>; if <span class="btn">Confirm and continue</span> remains, click once.</td><td>Seasonal candidates are kept because S2 measured F_S = 0.95.</td></tr>
+      <tr><td>S10</td><td>Untick <code>theta</code> and advanced/volatility/ML rows. Keep baselines, <code>ets</code>, <code>sarima</code>, <code>arima</code>, <code>ucm</code>. Click <span class="btn">Fit N models</span>.</td><td>Compact fit avoids the empty Theta diagnostics block at S15 and keeps the run fast. Baselines are automatic.</td></tr>
+      <tr><td>S11</td><td><code>horizon 12</code>, <code>folds 4</code>, <code>expanding</code>; <span class="btn">Run selection</span>.</td><td>Read the winner and <em>Is the difference real?</em> before trusting it.</td></tr>
+      <tr><td>S12</td><td><span class="btn">Run diagnostics</span>.</td><td>No inputs; residual battery appears.</td></tr>
+      <tr><td>S13</td><td>Blank model = winner; <code>H = 12</code>; all intervals; <code>auto</code>; <code>paths 2000</code>; blank seed; <code>none</code> combination; back-transformation must say <em>original units — not needed</em>. <span class="btn">Run forecast</span>.</td><td>If a <em>Transformed series</em> warning appears, a log is active; with a difference as well, Step 13 refuses the back-transformation outright. Undo the whole S3 treatment chain, re-run S1–S12 on the raw path, then forecast.</td></tr>
+      <tr><td>S14</td><td>Defaults: <code>H 6</code>, <code>folds 4</code>, <code>expanding</code>, all intervals, <code>paths 2000</code>, <code>reps 5</code>, blank seed, benchmark ticked, models empty, original units. <span class="btn">Run evaluation</span>.</td><td>Separate hold-out check; 95% interval is always included.</td></tr>
+      <tr><td>S15</td><td><code>print</code> + <em>All catalogue items</em>; <span class="btn">Re-check readiness</span> → <span class="btn">Finalize &amp; mark S15 complete</span> → <span class="btn">Download HTML</span>.</td><td>Scorecard 100/100 on the verified compact path. If the catalogue fails, untick Theta in S10 and re-run S10–S14.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============================ 3 · INTEREST ============================ -->
+<section id="interest" class="dataset">
+  <div class="kicker">Dataset 3 of 5</div>
+  <h2>ice_cream_interest.csv</h2>
+  <table class="kv">
+    <tr><th>File shape</th><td>200 rows, 2 columns: <code>month</code>, <code>interest</code>. Monthly, 2004-01 → 2020-08.</td></tr>
+    <tr><th>What S0 infers</th><td><code>month</code> → Time, <code>interest</code> → Value, Monthly (MS, period 12), continuous, 0 missing.</td></tr>
+    <tr><th>Initial S2 advice</th><td>Outlier dummies (high), seasonal term (high), Box–Cox at λ = −0.35 (medium).</td></tr>
+    <tr><th>Initial S8 verdict</th><td><span class="pill p-warn">READY WITH CAVEATS</span> already; no blockers.</td></tr>
+    <tr><th>Path used here</th><td>Still follow S7's better seasonal difference, then impute the 12 gaps; S8 stays ready.</td></tr>
+  </table>
+
+  <div class="step">
+    <h3>S0 — Load data</h3>
+    <p><strong>S0 Data</strong> → <span class="btn">Upload a file</span> → <span class="btn">choose a file</span> → <code>ice_cream_interest.csv</code>. In <span class="btn">Change mapping</span> confirm <code>month</code> as Time, <code>interest</code> as Value, Calendar <em>— infer from the dates —</em>, duplicates <em>Average them</em>, Data class <em>— keep the detected class —</em>. Click <span class="btn">Apply mapping</span> only if edited.</p>
+  </div>
+
+  <div class="step">
+    <h3>S1 — Explore (EDA)</h3>
+    <p>Open <strong>S1</strong> with the rolling-window box blank and click <span class="btn">Re-run</span> if needed. The cards show 200 observations, a strong upward trend, 7 unusual points, 1 level shift and a rolling spread that grows by about 197% across the window.</p>
+  </div>
+
+  <div class="step">
+    <h3>S2 — Preprocessing advice</h3>
+    <div class="why"><strong>Keep the unusual points and add them as intervention dummies.</strong> 7 unusual observations, 1 level shift; deletion would bias the fit.</div>
+    <div class="why"><strong>Keep a seasonal term.</strong> F_S = 0.88 at period 12, p &lt; 0.001.</div>
+    <div class="why"><strong>Apply a Box–Cox transform at the estimated λ (medium).</strong> λ = −0.35 (95% interval −0.63 to −0.06), neither log nor square root; spread moves 196.5%.</div>
+    <p><strong>Follow:</strong> keep the points and keep seasonal models ticked. <strong>Do not apply the medium-confidence Box–Cox card</strong> in this run: S8 is already ready, and an active transform would force an explicit bias-adjustment choice in S13/S14 and can conflict with the difference applied in S7. If your only goal is a variance-stabilised view, you may preview it, read <em>Before you commit</em>, then <span class="btn">Discard</span>.</p>
+  </div>
+
+  <div class="step">
+    <h3>S3 — Prepare data, first pass</h3>
+    <p>Open <strong>S3</strong>; leave <em>Nothing has been changed yet</em> at version 1. The panel's Undo/Redo controls are available but should be disabled. No preview or apply is needed yet.</p>
+  </div>
+
+  <div class="step">
+    <h3>S4 — Decompose</h3>
+    <p><strong>S4</strong>: <span class="btn">STL (recommended)</span>, <span class="btn">additive</span>, <span class="btn">Run</span>. Scorecard about <em>56% trend, 39% seasonal, 4.7% remainder</em>. Multiplicative also runs (<em>60% trend, 34% seasonal, 5.7% remainder</em>), but keep additive. <span class="btn">Compare methods</span> is optional.</p>
+  </div>
+
+  <div class="step">
+    <h3>S5 — Test stationarity</h3>
+    <p><span class="btn">Run the tests</span> in <strong>S5</strong>: verdict <em>Seasonal unit root</em>, 2 contradictions, no structural breaks. Read <em>What to do about it</em>.</p>
+  </div>
+
+  <div class="step">
+    <h3>S6 — ACF / PACF</h3>
+    <p><strong>S6</strong> loads with max lag 40: <em>seasonal spike at 12</em> (r = 0.830, lag 24 also outside the band). Read the ARIMA order hints and <em>What to do next</em>.</p>
+  </div>
+
+  <div class="step alt">
+    <h3>S7 — What next</h3>
+    <p>Headline: <em>Next step: take a seasonal difference at the detected period — not a first difference</em>. Click <span class="btn">Preview this</span> on the first card; verdict <span class="pill p-ok">better</span>, so click <span class="btn">Apply</span>. The second card <em>Take logs before modelling</em> also previews better, but do not apply it: an active transform plus this difference would make S13 refuse the forecast.</p>
+    <p>Re-run <strong>S1</strong> → <strong>S2</strong> → <strong>S4 Run</strong> → <strong>S5 Run the tests</strong> → <strong>S6 Re-run</strong> → <strong>S7 Re-run</strong>. S3 shows <code>difference</code>, version 2, 12 missing values.</p>
+  </div>
+
+  <div class="step alt">
+    <h3>S3 again — fill the 12 gaps</h3>
+    <p>Fresh S2 offers <em>Impute with a state-space model</em>. <span class="btn">Preview</span> → <span class="btn">Apply</span>. Ignore <em>Do not add seasonal terms</em>, <em>A difference has already been applied</em> and <em>Smoothing for presentation</em>. Use <span class="btn">Re-run Steps 1 and 2</span>, then re-run S4–S7. Applied strip: <code>difference</code> + <code>kalman_smoother</code>, version 3, 0 missing.</p>
+  </div>
+
+  <div class="step">
+    <h3>S8 — Ready to model?</h3>
+    <p><strong>S8</strong>: horizon <code>12</code> → <span class="btn">Check this horizon</span> → <span class="btn">Re-assess</span>. Verdict stays <span class="pill p-warn">READY WITH CAVEATS</span>, no blockers. Caveats: 7 flagged untreated outliers, level–spread correlation 0.97 with spread growth ≈197%, seasonal unit root, and integration back to original scale.</p>
+  </div>
+
+  <div class="step">
+    <h3>S9–S15 — model, forecast, evaluate, report</h3>
+    <table class="steps">
+      <tr><th>Step</th><th>Fill / click / toggle</th><th>Why and what you see</th></tr>
+      <tr><td>S9</td><td><span class="btn">Build the candidate list</span>.</td><td>Seed-20260101 run produced 21 compatible candidates, baselines included.</td></tr>
+      <tr><td>S10</td><td>Untick <code>theta</code> and advanced rows; keep baselines, <code>ets</code>, <code>sarima</code>, <code>arima</code>, <code>ucm</code>. <span class="btn">Fit N models</span>.</td><td>In a verified compact run the winner was <code>ets</code>. Unticking Theta keeps S15's catalogue healthy.</td></tr>
+      <tr><td>S11</td><td><code>12</code> / <code>4</code> / <code>expanding</code>; <span class="btn">Run selection</span>.</td><td>Ranked shortlist, CV MASE, Diebold–Mariano and Mincer–Zarnowitz blocks appear.</td></tr>
+      <tr><td>S12</td><td><span class="btn">Run diagnostics</span>.</td><td>Residual battery for the fitted models.</td></tr>
+      <tr><td>S13</td><td>Blank model, <code>H 12</code>, all intervals, <code>auto</code>, <code>2000</code> paths, blank seed, <code>none</code>, original units. <span class="btn">Run forecast</span>.</td><td>No driver column exists, so there is no scenario box. Back-transformation says <em>original units — not needed</em>.</td></tr>
+      <tr><td>S14</td><td><code>H 6</code>, <code>4</code> folds, <code>expanding</code>, all intervals, <code>2000</code> paths, <code>5</code> reps, benchmark ticked, blank seed, models empty. <span class="btn">Run evaluation</span>.</td><td>Out-of-sample metrics and calibration; 95% coverage always travels.</td></tr>
+      <tr><td>S15</td><td><code>print</code>, <em>All catalogue items</em>, <span class="btn">Re-check readiness</span>, <span class="btn">Finalize &amp; mark S15 complete</span>, <span class="btn">Download HTML</span>.</td><td>100/100 scorecard on the verified compact path; verdict <em>Analysis complete — ready for manuscript writing</em>.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============================ 4 · VS HEATER ============================ -->
+<section id="vs-heater" class="dataset">
+  <div class="kicker">Dataset 4 of 5</div>
+  <h2>ice_cream_vs_heater.csv</h2>
+  <table class="kv">
+    <tr><th>File shape</th><td>198 rows, 3 columns: <code>Month</code>, <code>heater</code>, <code>ice cream</code>. Monthly, 2004-01 → 2020-06.</td></tr>
+    <tr><th>Default mapping</th><td><code>Month</code> → Time, <code>heater</code> → Value, <code>ice cream</code> → exogenous driver.</td></tr>
+    <tr><th>Initial S2 advice</th><td>Outlier dummies (high), seasonal term (high), Box–Cox at λ = −0.66 (medium).</td></tr>
+    <tr><th>Initial S8 verdict</th><td><span class="pill p-warn">READY WITH CAVEATS</span> already; no blockers.</td></tr>
+    <tr><th>Path used here</th><td>Choose one target below; S7 difference → S3 imputation → S8 ready → S13 driver scenario.</td></tr>
+  </table>
+
+  <div class="step alt">
+    <h3>S0 — Load data and choose which column is the target</h3>
+    <p><strong>Default branch — forecast <code>heater</code>:</strong> <strong>S0 Data</strong> → <span class="btn">Upload a file</span> → <code>ice_cream_vs_heater.csv</code>. Accept the automatic mapping: Time <code>Month</code>, Value <code>heater</code>, Calendar <em>— infer from the dates —</em>, duplicates <em>Average them</em>, Data class <em>— keep the detected class —</em>. The <em>Other numeric columns in this file</em> line should name <code>ice cream</code>; it becomes the future driver shown in S13.</p>
+    <p><strong>Alternative branch — forecast <code>ice cream</code>:</strong> do <em>not</em> just change <em>Value column</em> to <code>ice cream</code> in <span class="btn">Change mapping</span>. That editor has no exogenous-column selector, so it would leave <code>ice cream</code> as both target and driver. Instead use <span class="btn">Paste a table</span> with the two numeric columns swapped, or upload a reordered copy whose header is <code>Month,ice cream,heater</code>. The app then maps <code>ice cream</code> as Value and <code>heater</code> as the driver. Click <span class="btn">Analyse this table</span> for pasted text, and confirm the mapping fields are the same as above with the names swapped.</p>
+    <p class="warn">The mapping editor shows <em>Time column</em>, <em>Value column</em>, <em>Calendar</em>, <em>Duplicate timestamps</em> and <em>Data class</em> only. There is no start-date or driver-list control in this panel.</p>
+  </div>
+
+  <div class="step">
+    <h3>S1 — Explore (EDA)</h3>
+    <p>Open <strong>S1</strong> with the rolling-window box blank. Default heater target: 198 observations, 7 unusual points, 3 level shifts, strong trend and season. Reordered ice-cream target: 198 observations, 7 unusual points, 2 level shifts, even stronger trend (trend R² ≈ 0.55) and season.</p>
+  </div>
+
+  <div class="step">
+    <h3>S2 — Preprocessing advice</h3>
+    <div class="why"><strong>Keep the unusual points and add them as intervention dummies.</strong> 7 unusual observations; 3 level shifts for heater, 2 for ice cream.</div>
+    <div class="why"><strong>Keep a seasonal term.</strong> F_S = 0.91 (heater) or 0.88 (ice cream) at period 12, p &lt; 0.001.</div>
+    <div class="why"><strong>Apply a Box–Cox transform at the estimated λ (medium).</strong> λ = −0.66 (heater) or −0.33 (ice cream); rolling spread grows 91% or 198%.</div>
+    <p><strong>Follow:</strong> keep the points and keep seasonal/driver-aware models ticked in S10. Do not apply the medium-confidence Box–Cox card; the run below keeps original units so S13/S14 need no bias adjustment. Use <span class="btn">Preview</span> then <span class="btn">Discard</span> if you want to inspect it.</p>
+  </div>
+
+  <div class="step">
+    <h3>S3 — Prepare data, first pass</h3>
+    <p>Open <strong>S3</strong> and leave <em>Nothing has been changed yet</em>, version 1. The Applied strip is where the difference and imputation will appear after S7.</p>
+  </div>
+
+  <div class="step">
+    <h3>S4 — Decompose</h3>
+    <p><strong>S4</strong>: <span class="btn">STL (recommended)</span>, <span class="btn">additive</span>, <span class="btn">Run</span>. Heater target: about <em>26% trend, 68% seasonal, 6.6% remainder</em>; ice-cream target: about <em>57% trend, 38% seasonal, 4.7% remainder</em>. Multiplicative also runs; keep additive for the recorded result. <span class="btn">Compare methods</span> is optional.</p>
+  </div>
+
+  <div class="step">
+    <h3>S5 — Test stationarity</h3>
+    <p><span class="btn">Run the tests</span>. Heater target: <em>Unit root (ADF and KPSS agree; one test dissents)</em>, 2 contradictions, no breaks. Ice-cream target: <em>Seasonal unit root</em>, 2 contradictions, no breaks.</p>
+  </div>
+
+  <div class="step">
+    <h3>S6 — ACF / PACF and CCF</h3>
+    <p><strong>S6</strong> loads with max lag 39. Heater target: <em>seasonal spike at 12</em> (r = 0.861; lags 24, 36 significant). Ice-cream target: <em>seasonal spike at 12</em> (r = 0.813; lag 24 significant) and an order hint such as <code>(0,1,1)(0,1,1)12</code>. Read the CCF panel to see how the other numeric column aligns with the target; it is a hint, not a final order.</p>
+  </div>
+
+  <div class="step alt">
+    <h3>S7 — What next: branch-specific difference</h3>
+    <p><strong>Heater target:</strong> headline <em>Next step: take a first difference (d = 1)</em>. Click <span class="btn">Preview this</span> → verdict <span class="pill p-ok">better</span> → <span class="btn">Apply</span> on <em>Take a first difference</em>. Do not apply the secondary log card.</p>
+    <p><strong>Ice-cream target:</strong> headline <em>Next step: take a seasonal difference at the detected period</em>. Click <span class="btn">Preview this</span> → verdict <span class="pill p-ok">better</span> → <span class="btn">Apply</span> on <em>Take a seasonal difference…</em>.</p>
+    <p>After either apply, re-run <strong>S1</strong> → <strong>S2</strong> → <strong>S4 Run</strong> → <strong>S5 Run the tests</strong> → <strong>S6 Re-run</strong> → <strong>S7 Re-run</strong>. S3 shows one <code>difference</code> treatment, version 2.</p>
+  </div>
+
+  <div class="step alt">
+    <h3>S3 again — fill the gap</h3>
+    <p><strong>Heater target:</strong> S2 now offers <em>Impute with seasonal interpolation</em> (high) because a first difference leaves 1 missing value. <span class="btn">Preview</span> → <span class="btn">Apply</span>.</p>
+    <p><strong>Ice-cream target:</strong> S2 offers <em>Impute with a state-space model</em> (medium) because a lag-12 difference leaves 12 missing values. <span class="btn">Preview</span> → <span class="btn">Apply</span>.</p>
+    <p>Use <span class="btn">Re-run Steps 1 and 2</span>, then re-run S4–S7. Applied strip: <code>difference</code> + <code>seasonal_interpolation</code> (heater) or <code>kalman_smoother</code> (ice cream), version 3, 0 missing. Ignore <em>A difference has already been applied</em> and <em>Smoothing for presentation</em>.</p>
+  </div>
+
+  <div class="step">
+    <h3>S8 — Ready to model?</h3>
+    <p><strong>S8</strong>: horizon <code>12</code> → <span class="btn">Check this horizon</span> → <span class="btn">Re-assess</span>. Verdict stays <span class="pill p-warn">READY WITH CAVEATS</span>, no blockers. Caveats include the 7 flagged outliers, variance growth, stationarity verdict and integration back to original scale.</p>
+  </div>
+
+  <div class="step">
+    <h3>S9–S15 — model, forecast, evaluate, report</h3>
+    <table class="steps">
+      <tr><th>Step</th><th>Fill / click / toggle</th><th>Why and what you see</th></tr>
+      <tr><td>S9</td><td><span class="btn">Build the candidate list</span>.</td><td>With a driver column the heater-target run produced 23 candidates, including <code>ardl</code>, <code>arimax</code>, <code>var</code> and <code>vecm</code>. Keep ARDL/ARIMAX if you want driver effects, but untick the heavy ML/volatility rows if you want a fast run.</td></tr>
+      <tr><td>S10</td><td>Untick <code>theta</code>. Keep baselines, <code>ets</code>, <code>arima</code>, <code>sarima</code>, <code>ucm</code>; optionally <code>ardl</code>/<code>arimax</code>. <span class="btn">Fit N models</span>.</td><td>In a verified seed-20260101 heater-target run the winner was <code>ets</code>. Baselines are always fitted. Unticking Theta avoids the S15 catalogue error.</td></tr>
+      <tr><td>S11</td><td><code>12</code> / <code>4</code> / <code>expanding</code>; <span class="btn">Run selection</span>.</td><td>Read <em>Ranked shortlist</em> and <em>Why this model</em>.</td></tr>
+      <tr><td>S12</td><td><span class="btn">Run diagnostics</span>.</td><td>Residual battery; no inputs.</td></tr>
+      <tr><td>S13</td><td>Blank model, <code>H 12</code>, all intervals, <code>auto</code>, <code>2000</code> paths, blank seed, <code>none</code>, original units. <span class="btn">Run forecast</span>.</td><td>A <em>Future driver paths (scenario)</em> box appears. Heater target shows driver <code>ice cream</code>; ice-cream target shows <code>heater</code>. Leave it blank to hold the last observed driver value flat, or type exactly 12 comma-separated numbers and click <span class="btn">Save scenario &amp; forecast</span>. A held-flat driver is a scenario, not a forecast of the driver.</td></tr>
+      <tr><td>S14</td><td><code>H 6</code>, <code>4</code> folds, <code>expanding</code>, all intervals, <code>2000</code> paths, <code>5</code> reps, blank seed, benchmark ticked, models empty, original units. <span class="btn">Run evaluation</span>.</td><td>Held-out accuracy and calibration; 95% interval locked on.</td></tr>
+      <tr><td>S15</td><td><code>print</code>, <em>All catalogue items</em>, <span class="btn">Re-check readiness</span>, <span class="btn">Finalize &amp; mark S15 complete</span>, <span class="btn">Open one-file HTML</span> / <span class="btn">Download HTML</span>.</td><td>Compact fit gives 100/100. If the catalogue fails, untick Theta in S10 and re-run S10–S14.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============================ 5 · ORIGINAL ============================ -->
+<section id="original" class="dataset">
+  <div class="kicker">Dataset 5 of 5</div>
+  <h2>original_series.csv</h2>
+  <table class="kv">
+    <tr><th>File shape</th><td>72 rows, 1 numeric column named <code>0</code>; no date column.</td></tr>
+    <tr><th>What S0 infers</th><td>Time column blank (<em>rows are evenly spaced</em>), Value <code>0</code>, synthetic Monthly (MS, period 12) index 2000-01-01 → 2005-12-01, continuous, 0 missing.</td></tr>
+    <tr><th>Initial S2 advice</th><td>Keep unusual points as dummies (high); <em>do not add seasonal terms or a seasonal difference</em> (high).</td></tr>
+    <tr><th>Initial S8 verdict</th><td><span class="pill p-bad">NOT READY</span> one blocker: stationarity.</td></tr>
+    <tr><th>Path used here</th><td>S7 seasonal difference → S3 state-space imputation → S8 <span class="pill p-warn">READY WITH CAVEATS</span>.</td></tr>
+  </table>
+
+  <div class="step alt">
+    <h3>S0 — Load data, and understand the invented dates</h3>
+    <p><strong>S0 Data</strong> → <span class="btn">Upload a file</span> → <code>original_series.csv</code>. The app cannot find a time column, so it uses row order. Open <span class="btn">Change mapping</span> and confirm:</p>
+    <table class="kv">
+      <tr><th>Time column</th><td><em>— rows are evenly spaced —</em> (blank).</td></tr>
+      <tr><th>Value column</th><td><code>0</code>.</td></tr>
+      <tr><th>Calendar</th><td><em>— infer from the dates —</em>; the software reports a medium-confidence Monthly (MS, period 12) synthetic index.</td></tr>
+      <tr><th>Duplicate timestamps</th><td><em>Average them</em>.</td></tr>
+      <tr><th>Data class</th><td><em>— keep the detected class —</em>, continuous.</td></tr>
+    </table>
+    <p class="warn">This panel has no start-date input. The displayed 2000-01-01 → 2005-12-01 dates are placeholders, not real observations. If you know the real dates, use <span class="btn">Paste a table</span> with a new first column of real month-starts and a second column of values, then set <em>Time column</em> to that new column and <em>Calendar</em> to <em>Monthly (start of month) (period 12)</em>. Otherwise accept the synthetic index and state in S15 that the calendar was invented by the software.</p>
+  </div>
+
+  <div class="step">
+    <h3>S1 — Explore (EDA)</h3>
+    <p>Open <strong>S1</strong>, rolling-window box blank, click <span class="btn">Re-run</span> if needed. The cards show 72 observations, 3 unusual points, 2 level shifts, a dominant trend (trend R² ≈ 0.82) and no seasonality. The time axis is the synthetic monthly index.</p>
+  </div>
+
+  <div class="step">
+    <h3>S2 — Preprocessing advice</h3>
+    <div class="why"><strong>Keep the unusual points and add them as intervention dummies.</strong> 3 unusual observations, 2 level shifts.</div>
+    <div class="why"><strong>Do not add seasonal terms or a seasonal difference.</strong> Seasonal strength F_S = 0, Kruskal–Wallis p = 1.000; adding seasonal terms would fit noise.</div>
+    <p><strong>Follow the second card as a modelling constraint:</strong> prefer non-seasonal ARIMA/ETS candidates in S10 and do not tick seasonal-specialist rows. There is no Apply button on this card. Keep the 3 unusual points; do not delete them.</p>
+  </div>
+
+  <div class="step">
+    <h3>S3 — Prepare data, first pass</h3>
+    <p>Open <strong>S3</strong>; leave <em>Nothing has been changed yet</em> at version 1. Undo/Redo are disabled.</p>
+  </div>
+
+  <div class="step">
+    <h3>S4 — Decompose</h3>
+    <p><strong>S4</strong>: <span class="btn">STL (recommended)</span>, <span class="btn">additive</span>, <span class="btn">Run</span>. Scorecard about <em>92% trend, 2.0% seasonal, 5.6% remainder</em>. Multiplicative also runs but gives a much larger remainder (<em>64% trend, 2.1% seasonal, 34% remainder</em>), so keep additive. <span class="btn">Compare methods</span> is optional.</p>
+  </div>
+
+  <div class="step">
+    <h3>S5 — Test stationarity</h3>
+    <p><span class="btn">Run the tests</span>. Verdict <em>Conflicting evidence</em>, 1 contradiction, breaks estimated at 2001-02-01 and 2002-09-01 on the synthetic calendar. Read <em>Where the tests disagree</em>; a short 72-row series has low power, which the software states as a caveat.</p>
+  </div>
+
+  <div class="step">
+    <h3>S6 — ACF / PACF</h3>
+    <p><strong>S6</strong> loads with max lag 14: <em>short-memory AR(1)-like</em> (r₁ = 0.893, r₂ = 0.814, r₃ = 0.750; PACF significant to lag 1). Order hints include <code>(1,1,0)(0,1,0)12</code> and <code>(1,1,1)(0,1,1)12</code>; note that these hints still contain a seasonal slot because the software inferred period 12 from the invented calendar, while S2 said not to add seasonal terms.</p>
+  </div>
+
+  <div class="step alt">
+    <h3>S7 — What next: clear the blocker despite the “no seasonal difference” advice</h3>
+    <p>Headline: <em>Next step: take a seasonal difference at the detected period — not a first difference</em>. This is the only operation the software offers here; it arises from the synthetic monthly period, not from real seasonality. Click <span class="btn">Preview this</span>; verdict <span class="pill p-info">neutral</span>, so click <span class="btn">Apply</span>.</p>
+    <p>Re-run <strong>S1</strong> → <strong>S2</strong> → <strong>S4 Run</strong> → <strong>S5 Run the tests</strong> → <strong>S6 Re-run</strong> → <strong>S7 Re-run</strong>. S3 shows <code>difference</code>, version 2, and 12 missing values. S8 now reports a new blocker: <em>No unresolved gaps — 12 missing, longest run 12</em>.</p>
+  </div>
+
+  <div class="step alt">
+    <h3>S3 again — fill the 12 gaps</h3>
+    <p>Fresh S2 offers <em>Impute with a state-space model</em> (medium), plus <em>Do not add seasonal terms</em>, <em>A difference has already been applied</em>, a Box–Cox note and a single-outlier note. Click <span class="btn">Preview</span> → <span class="btn">Apply</span> only on <em>Impute with a state-space model</em>. Do not apply Box–Cox: it would add an active transform and force a bias-adjustment choice later.</p>
+    <p>Use <span class="btn">Re-run Steps 1 and 2</span>, then re-run S4–S7. Applied strip: <code>difference</code> + <code>kalman_smoother</code>, version 3, 0 missing. S7 now shows a <em>difference guardrail</em> note rather than another action.</p>
+  </div>
+
+  <div class="step">
+    <h3>S8 — Ready to model?</h3>
+    <p><strong>S8</strong>: horizon <code>12</code> → <span class="btn">Check this horizon</span> → <span class="btn">Re-assess</span>. Verdict <span class="pill p-warn">READY WITH CAVEATS</span>, no blockers. Travelling caveats: conflicting stationarity, 2 estimated breaks, 3 flagged untreated outliers, differenced/imputed series, and the invented monthly calendar.</p>
+  </div>
+
+  <div class="step">
+    <h3>S9–S15 — model, forecast, evaluate, report</h3>
+    <table class="steps">
+      <tr><th>Step</th><th>Fill / click / toggle</th><th>Why and what you see</th></tr>
+      <tr><td>S9</td><td><span class="btn">Build the candidate list</span>.</td><td>The registry is filtered by n = 72 and the measured facts. Short-series cautions appear in the candidate cards.</td></tr>
+      <tr><td>S10</td><td>Untick <code>theta</code> and heavy advanced rows. Keep baselines, <code>arima</code>, <code>ets</code>, <code>ucm</code>; prefer non-seasonal specifications in line with S2. <span class="btn">Fit N models</span>.</td><td>Fewer candidates are appropriate for 72 observations. Baselines are still fitted automatically.</td></tr>
+      <tr><td>S11</td><td><code>12</code> / <code>4</code> / <code>expanding</code>; <span class="btn">Run selection</span>.</td><td>Read the fold spread carefully: with only 72 rows, overlapping folds have low power.</td></tr>
+      <tr><td>S12</td><td><span class="btn">Run diagnostics</span>.</td><td>Residual battery; no inputs.</td></tr>
+      <tr><td>S13</td><td>Blank model, <code>H 12</code>, all intervals, <code>auto</code>, <code>2000</code> paths, blank seed, <code>none</code>, original units. <span class="btn">Run forecast</span>.</td><td>H = 12 is one fifth of n = 72; if the <em>Horizon advisor</em> appears, tick <em>I understand</em> only after reading the warning. No driver scenario box appears.</td></tr>
+      <tr><td>S14</td><td><code>H 6</code>, <code>4</code> folds, <code>expanding</code>, all intervals, <code>2000</code> paths, <code>5</code> reps, blank seed, benchmark ticked, models empty, original units. <span class="btn">Run evaluation</span>.</td><td>Out-of-sample only; do not quote in-sample fit as accuracy.</td></tr>
+      <tr><td>S15</td><td><code>print</code>, <em>All catalogue items</em>, <span class="btn">Re-check readiness</span>, <span class="btn">Finalize &amp; mark S15 complete</span>, <span class="btn">Download HTML</span>.</td><td>State the synthetic 2000–2005 calendar in the write-up. Compact fit gives 100/100; if the catalogue fails, untick Theta in S10 and re-run S10–S14.</td></tr>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer>One standalone HTML file · inline styles only · generated for the five CSVs attached to this conversation.</footer>
+</div>
+</body>
+</html>

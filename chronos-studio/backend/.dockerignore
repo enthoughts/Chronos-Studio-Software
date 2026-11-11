@@ -1,0 +1,17 @@
+# Keep the backend image small and reproducible (Part 19).
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+tests/
+*.log
+.env
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+README.md

@@ -1,0 +1,39 @@
+# Core path — pip install -r requirements.txt
+fastapi>=0.110
+uvicorn[standard]>=0.27
+pydantic>=2.6
+python-multipart>=0.0.9
+numpy>=1.26
+pandas>=2.1
+scipy>=1.11
+statsmodels>=0.14.1
+openpyxl>=3.1
+plotly>=5.20
+httpx>=0.27
+
+# Dev / test
+pytest>=8.0
+pytest-cov>=4.1
+pytest-asyncio>=0.23
+
+# --- Optional extras ------------------------------------------------------ #
+# pyproject.toml [project.optional-dependencies] is the canonical declaration.
+# Install them with `pip install -e ".[report,ml,ai,dev]"` or, for a container,
+# use `pip install -r requirements-deploy.txt` (what backend/Dockerfile does).
+# Every extra is feature-flagged in app/core/config.py::optional_features; the
+# app degrades gracefully rather than crashing when one is missing.
+# --------------------------------------------------------------------------- #
+# pmdarima>=2.0            # auto_arima
+# arch>=6.2                # GARCH family (Part 11)
+# scikit-learn>=1.4        # ML models (Part 12)
+# lightgbm>=4.1
+# statsforecast>=1.7
+# sktime>=0.27
+# tbats>=1.1
+# prophet>=1.1.5
+# pyreadstat>=1.2          # .sav / .dta readers
+# pyreadr>=0.4             # .rds reader
+# python-docx>=1.1         # DOCX reports (Part 18)
+# weasyprint>=61           # PDF reports
+# kaleido>=0.2.1           # server-side PNG/SVG/PDF export
+# google-genai>=1.0,<2    # Live AI assistant (offline mode needs none; requirements-deploy.txt installs it)

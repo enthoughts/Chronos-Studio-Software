@@ -1,0 +1,120 @@
+{
+  "description": "Independent reference values for the bundled AirPassengers seed dataset, computed with statsmodels (the same engine R's forecast package uses for these estimators). Part 19 golden-file comparison; see METHODS.md \u00a7Golden references.",
+  "dataset": {
+    "id": "airpassengers",
+    "file": "airpassengers.csv",
+    "n": 144,
+    "start": "1949-01-01 00:00:00",
+    "end": "1960-12-01 00:00:00",
+    "mean": 280.2986111111111,
+    "period": 12
+  },
+  "statsmodels_version": "0.15.0",
+  "reference": {
+    "adfuller_aic_constant": {
+      "statistic": 0.8153688792060528,
+      "pvalue": 0.9918802434376411,
+      "usedlag": 13,
+      "nobs": 130,
+      "regression": "c",
+      "autolag": "AIC"
+    },
+    "kpss_level": {
+      "statistic": 1.6513122354165206,
+      "pvalue": 0.01,
+      "lags": 8,
+      "regression": "c",
+      "nlags": "auto",
+      "note": "statsmodels reports the p-value clipped to [0.01, 0.10]."
+    },
+    "kpss_level_legacy": {
+      "statistic": 1.0521750110135095,
+      "pvalue": 0.01,
+      "lags": 14,
+      "regression": "c",
+      "nlags": "legacy"
+    },
+    "sarimax_111_111_12": {
+      "order": [
+        1,
+        1,
+        1
+      ],
+      "seasonal_order": [
+        1,
+        1,
+        1,
+        12
+      ],
+      "aic": 922.2053774351551,
+      "bic": 936.0162471091439,
+      "params": [
+        -0.22981872390048294,
+        -0.0987323133161583,
+        -0.5460068458059556,
+        0.3959183967565716,
+        140.2945393832066
+      ]
+    },
+    "ets_add_mul_12": {
+      "aic": 709.8917192771407,
+      "sse": 15952.880435010864,
+      "params": {
+        "smoothing_level": 0.31858660179002635,
+        "smoothing_trend": 0.0,
+        "smoothing_seasonal": 0.6013535031917566
+      },
+      "forecast_3": [
+        445.242401048073,
+        418.2253505918355,
+        465.3097058307079
+      ]
+    }
+  },
+  "app_golden": {
+    "adf_none": {
+      "statistic": 2.3906017343512316,
+      "p_value": 0.9971802685434736,
+      "lags": 13,
+      "says": "unit root",
+      "null": "unit root",
+      "rejects_null": false
+    },
+    "adf_constant": {
+      "statistic": 0.8153688792060528,
+      "p_value": 0.9918802434376411,
+      "lags": 13,
+      "says": "unit root",
+      "null": "unit root",
+      "rejects_null": false
+    },
+    "adf_constant_trend": {
+      "statistic": -2.1007818138446708,
+      "p_value": 0.5456589343124544,
+      "lags": 13,
+      "says": "unit root",
+      "null": "unit root",
+      "rejects_null": false
+    },
+    "kpss_level": {
+      "statistic": 2.335887287437073,
+      "p_value": 0.01,
+      "lags": 5,
+      "says": "unit root",
+      "null": "stationary",
+      "rejects_null": true
+    },
+    "kpss_trend": {
+      "statistic": 0.10279920639041347,
+      "p_value": 0.1,
+      "lags": 5,
+      "says": "stationary",
+      "null": "stationary",
+      "rejects_null": false
+    }
+  },
+  "notes": [
+    "App ADF with spec=\"constant\" is expected to match statsmodels adfuller(autolag=\"AIC\") exactly.",
+    "App KPSS uses an explicit short-lag bandwidth (Newey-West auto-bandwidth), so its statistic intentionally differs from statsmodels nlags=\"legacy\"; both agree on the verdict."
+  ]
+}

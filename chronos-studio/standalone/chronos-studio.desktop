@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Chronos Studio
+GenericName=Time-Series Analysis
+Comment=Offline-first time-series analysis workbench
+Exec=/usr/bin/chronos-studio
+Icon=chronos-studio
+Terminal=false
+Categories=Science;Education;DataVisualization;
+Keywords=statistics;forecasting;time series;JASP;
+StartupWMClass=ChronosStudio
+StartupNotify=true

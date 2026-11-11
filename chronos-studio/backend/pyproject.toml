@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chronos-studio"
+version = "0.1.0"
+description = "A free, beginner-friendly, web-based time-series analysis workbench (JASP for time series)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Chronos Studio contributors" }]
+keywords = ["time-series", "forecasting", "statistics", "gui", "arima", "garch"]
+
+# Core path: free and pip-installable only. Nothing here is paid or licence-locked.
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "pydantic>=2.6",
+    "python-multipart>=0.0.9",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "scipy>=1.11",
+    "statsmodels>=0.14.1",
+    "openpyxl>=3.1",
+    "plotly>=5.20",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+# Everything below is feature-flagged in app/core/config.py::optional_features.
+auto   = ["pmdarima>=2.0"]              # auto_arima
+garch  = ["arch>=6.2"]                  # ARCH/GARCH/EGARCH/GJR
+count  = ["statsmodels>=0.14.1"]        # Poisson/NB already in statsmodels
+ml     = ["scikit-learn>=1.4", "lightgbm>=4.1"]
+stats  = ["statsforecast>=1.7", "sktime>=0.27", "tbats>=1.1"]
+prophet= ["prophet>=1.1.5"]
+readers= ["pyreadstat>=1.2", "pyreadr>=0.4"]   # SPSS/Stata/R data files
+report = ["python-docx>=1.1", "kaleido>=0.2.1", "playwright>=1.40", "weasyprint>=61"]
+ai     = ["google-genai>=1.0,<2"]           # optional live Gemini path; offline mode needs none
+dev    = [
+    "pytest>=8.0", "pytest-cov>=4.1", "pytest-asyncio>=0.23",
+    "ruff>=0.3", "mypy>=1.9", "types-requests",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/chronos-studio"
+Documentation = "https://github.com/your-org/chronos-studio#readme"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.setuptools.package-data]
+app = ["assets/**/*"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "slow: heavy fits (TBATS, ML, long CV grids)",
+    "golden: compares against a stored reference output",
+    "needs: requires an optional dependency",
+]
+
+[tool.coverage.run]
+source = ["app/ts", "app/core", "app/advisor"]
+omit = ["tests/*", "**/__init__.py"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["E501", "B008"]   # B008: FastAPI Depends() in defaults is idiomatic
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+ignore_missing_imports = true
+plugins = []

@@ -1,0 +1,46 @@
+# Chronos Studio — `docker compose up --build`  →  http://localhost:8080
+#
+# Two free-tier-friendly containers. The frontend serves the built SPA and
+# reverse-proxies /api/ to the backend; the browser never needs to know a host.
+# Sessions live only in backend memory and expire (CHRONOS_SESSION_TTL_HOURS).
+services:
+  backend:
+    build:
+      context: ./backend
+      # Set to 1 to include Chromium for PDF / 300-dpi PNG exports (larger image).
+      args:
+        INSTALL_BROWSER: ${INSTALL_BROWSER:-0}
+    environment:
+      - CHRONOS_DEBUG=false
+      - CHRONOS_ALLOW_ALL_ORIGINS=true
+      - CHRONOS_SESSION_TTL_HOURS=${CHRONOS_SESSION_TTL_HOURS:-6}
+      - CHRONOS_UPLOAD_DIR=/tmp/chronos_uploads
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - CHRONOS_GEMINI_MODEL=${CHRONOS_GEMINI_MODEL:-gemini-2.5-flash}
+    expose: ["8000"]
+    ports: ["8000:8000"]
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 25s
+      retries: 3
+    tmpfs:
+      - /tmp/chronos_uploads:uid=10001,gid=10001,size=128m
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports: ["8080:80"]
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
